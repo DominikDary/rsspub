@@ -1,5 +1,5 @@
 # rsspub
-[![Deploy to Koyeb](https://www.koyeb.com/static/images/deploy/button.svg)](https://app.koyeb.com/deploy?name=rsspub&type=docker&image=harshit181%2Frsspub%3Alatest&instance_type=eco-nano&regions=sin&env%5BRPUB_PASSWORD%5D=root&env%5BRPUB_USERNAME%5D=root&ports=3000%3Bhttp%3B%2F&hc_protocol%5B3000%5D=tcp&hc_grace_period%5B3000%5D=5&hc_interval%5B3000%5D=30&hc_restart_limit%5B3000%5D=3&hc_timeout%5B3000%5D=5&hc_path%5B3000%5D=%2F&hc_method%5B3000%5D=get)
+[![Deploy to Koyeb](https://www.koyeb.com/static/images/deploy/button.svg)](https://app.koyeb.com/deploy?name=rsspub&type=docker&image=harshit181%2Frsspub%3Alatest&instance_type=eco-nano&regions=sin&ports=3000%3Bhttp%3B%2F&hc_protocol%5B3000%5D=tcp&hc_grace_period%5B3000%5D=5&hc_interval%5B3000%5D=30&hc_restart_limit%5B3000%5D=3&hc_timeout%5B3000%5D=5&hc_path%5B3000%5D=%2F&hc_method%5B3000%5D=get)
 
 **rsspub** is a self-hosted Rust application that turns your favorite RSS/Atom feeds/ Read Later articles into a personal daily newspaper (EPUB). It fetches articles, processes images, and bundles everything into an EPUB file that you can read on your e-reader or tablet.
 
@@ -20,7 +20,7 @@ It also serves an OPDS feed, making it easy to download the generated EPUBs dire
 - **Email Delivery:** Automatically send generated EPUBs to a configured email address.
 - **Latest Downloads** Fetch the latest generated epub directly via (`hostname/downloads/latest_rss.epub`) and (`hostname/downloads/latest_readlater.epub`)
 - **Scheduling:** Automated generation based on cron expressions.
-- **Authentication:** Optional Basic Authentication to protect your instance.
+- **Authentication:** Required Basic Authentication to protect your API and downloads.
 - **Performance:** Built with Rust, Axum, and Tokio for high performance and low resource usage.
 
 ## Roadmap
@@ -52,10 +52,11 @@ It also serves an OPDS feed, making it easy to download the generated EPUBs dire
     cd rsspub
     ```
 
-2.  Run the application:
+2.  Set a unique username and password, then run the application:
     ```bash
-    cargo run
+    RPUB_USERNAME=your_username RPUB_PASSWORD=your_long_unique_password cargo run
     ```
+    Both variables are required and must not be empty.
     The server will start at `http://0.0.0.0:3000`.
 
 ### Docker
@@ -63,12 +64,12 @@ It also serves an OPDS feed, making it easy to download the generated EPUBs dire
 You can also run **rsspub** using Docker Compose.
 
 1.  Make sure you have Docker and Docker Compose installed.
-2.  (Optional) Create a `.env` file to configure environment variables:
+2.  Create a `.env` file with unique credentials:
     ```env
     RPUB_USERNAME=your_username
-    RPUB_PASSWORD=your_password
-    SECURE_OPDS=false
+    RPUB_PASSWORD=your_long_unique_password
     ```
+    Both variables are required and must not be empty.
 3.  Run the application:
     ```bash
     docker-compose up -d
@@ -87,6 +88,8 @@ To run the container:
 ```bash
 docker run -p 3000:3000 -v $(pwd)/data:/app/db rsspub
 ```
+
+Set `RPUB_USERNAME` and `RPUB_PASSWORD` to unique, non-empty values when starting the container; it will exit if either is missing.
 
 ### Usage
 
@@ -110,15 +113,14 @@ You can configure the application to automatically send generated EPUBs via emai
 
 You can configure the application using environment variables:
 
--   `RPUB_USERNAME`: Set a username for Basic Authentication.
--   `RPUB_PASSWORD`: Set a password for Basic Authentication.
--   `SECURE_OPDS`  : Secure Download routes with Basic Authentication.
+-   `RPUB_USERNAME`: Required username for Basic Authentication.
+-   `RPUB_PASSWORD`: Required password for Basic Authentication.
 -   `EMAIL_TLS`: Configure SMTP encryption mode. Defaults to `starttls`.
     -   `starttls` : Uses STARTTLS for opportunistic encryption.
     -   `relay`    : Uses implicit TLS.
     -   `plaintext`: Uses an unencrypted connection.
 
-If these variables are set, the Web UI and API (except `/opds`) will require authentication.
+The API and all download routes, including `/opds` and `/epubs`, require authentication. The static Web UI and `/api/version` remain public.
 
 
 ### Read It Later
