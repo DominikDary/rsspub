@@ -86,10 +86,11 @@ docker build -t rsspub .
 
 To run the container:
 ```bash
-docker run -p 3000:3000 -v $(pwd)/data:/app/db rsspub
+docker run -p 3000:3000 \
+  -e RPUB_USERNAME=your_username \
+  -e RPUB_PASSWORD=your_long_unique_password \
+  -v $(pwd)/data:/app/db rsspub
 ```
-
-Set `RPUB_USERNAME` and `RPUB_PASSWORD` to unique, non-empty values when starting the container; it will exit if either is missing.
 
 ### Usage
 

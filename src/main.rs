@@ -33,7 +33,7 @@ static GLOBAL: tikv_jemallocator::Jemalloc = tikv_jemallocator::Jemalloc;
 #[tokio::main]
 async fn main() {
     for name in [routes::RPUB_USERNAME, routes::RPUB_PASSWORD] {
-        if std::env::var(name).is_err_or(|value| value.trim().is_empty()) {
+        if !matches!(std::env::var(name), Ok(value) if !value.trim().is_empty()) {
             panic!("{name} must be set to a non-empty value");
         }
     }
