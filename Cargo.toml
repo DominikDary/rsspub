@@ -4,7 +4,7 @@ version = "0.110.1"
 edition = "2024"
 
 [dependencies]
-feed-rs = "2.3.1"
+feed-rs = "3.0.0"
 reqwest = { version = "0.13.4", features = ["json", "blocking", "cookies", "rustls", "charset"],default-features = false }
 tokio = { version = "1.52", features = ["full"] }
 epub-builder = "0.8.3"
