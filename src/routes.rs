@@ -8,7 +8,7 @@ use axum::{
 use std::sync::Arc;
 use tower::ServiceBuilder;
 use tower_http::{services::ServeDir, set_header::SetResponseHeaderLayer};
-use tracing::{info, warn};
+use tracing::info;
 use crate::handlers::{auth_handler, config_handler, domain_override_handler, download_handler, email_handler, feed_handler, read_it_later_handler, schedule_handler};
 pub const RPUB_USERNAME: &'static str = "RPUB_USERNAME";
 pub const RPUB_PASSWORD: &'static str = "RPUB_PASSWORD";
@@ -23,22 +23,13 @@ async fn version_handler() -> axum::Json<VersionInfo> {
         version: env!("CARGO_PKG_VERSION"),
     })
 }
-const SECURE_OPDS: &'static str = "SECURE_OPDS";
-
 pub fn create_router(state: Arc<AppState>) -> Router {
-    let secure_opds = std::env::var(SECURE_OPDS)
-        .map(|v| v.to_lowercase() == "true")
-        .unwrap_or(false);
-
     let download_routes = Router::new()
         .route("/opds", get(handlers::opds_handler))
         .route("/downloads/latest_rss.epub", get(download_handler::download_latest_rss))
         .route("/downloads/latest_readlater.epub", get(download_handler::download_latest_readlater))
         .nest_service("/epubs", ServeDir::new("epubs"));
-
-    let download_routes =
-    if secure_opds {add_auth_to_routes(download_routes)}
-    else{ download_routes };
+    let download_routes = add_auth_to_routes(download_routes);
 
     let protected_routes = Router::new()
         .route("/generate", post(download_handler::generate_epub_adhoc))
@@ -108,11 +99,6 @@ pub fn create_router(state: Arc<AppState>) -> Router {
 
 
 fn add_auth_to_routes(routes: Router<Arc<AppState>>) -> Router<Arc<AppState>> {
-    if std::env::var(RPUB_USERNAME).is_ok() && std::env::var(RPUB_PASSWORD).is_ok() {
-        info!("Authentication enabled");
-        routes.layer(axum::middleware::from_fn(auth_handler::auth))
-    } else {
-        warn!("Authentication disabled (RPUB_USERNAME and/or RPUB_PASSWORD not set)");
-        routes
-    }
+    info!("Authentication enabled");
+    routes.layer(axum::middleware::from_fn(auth_handler::auth))
 }

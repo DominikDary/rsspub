@@ -32,6 +32,12 @@ static GLOBAL: tikv_jemallocator::Jemalloc = tikv_jemallocator::Jemalloc;
 
 #[tokio::main]
 async fn main() {
+    for name in [routes::RPUB_USERNAME, routes::RPUB_PASSWORD] {
+        if !matches!(std::env::var(name), Ok(value) if !value.trim().is_empty()) {
+            panic!("{name} must be set to a non-empty value");
+        }
+    }
+
     #[cfg(feature = "mem_opt")]
     let _vips_app = libvips::VipsApp::new("rsspub", false).expect("Failed to initialize libvips");
     #[cfg(feature = "alternative-alloc")]
